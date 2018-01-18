@@ -2,6 +2,7 @@
 // Data: 10.02.2011
 // (C)2012 mgr Jerzy Wa³aszek
 //-----------------------------
+//zmiana
 
 program ludet;
 

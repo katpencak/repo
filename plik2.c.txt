@@ -3,6 +3,8 @@
 // (C)2013 mgr Jerzy Wa³aszek
 //---------------------------
 
+//sahsuoaf
+
 program hashing;
 
 // Definicja elementu listy

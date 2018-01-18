@@ -4,7 +4,7 @@
 //--------------------------------------------
 
 program graph_coloring;
-
+// zmiana do kolokwium
 // Definicja elementu listy s¹siedztwa
 type
   PslistEl = ^slistEl;

@@ -1,0 +1,130 @@
+// Haszowanie z porcjowaniem
+// Data: 16.06.2013
+// (C)2013 mgr Jerzy Wa³aszek
+//---------------------------
+
+program hashing;
+
+// Definicja elementu listy
+//-------------------------
+type
+  PslistEl = ^slistEl;
+  slistEl =  record
+    next  : PslistEl;
+    data  : string;
+  end;
+
+// Funkcja haszuj¹ca
+//------------------
+function hf(s : string) : cardinal;
+var
+  h,i : cardinal;
+begin
+  h := 0;
+  for i := 1 to length(s) do
+    h := 31 * h + (ord(s[i]) - 65);
+  hf := h mod 10;
+end;
+
+//**********************
+//*** PROGRAM G£ÓWNY ***
+//**********************
+var
+  T : array[0..9] of PslistEl;
+  p,r : PslistEl;
+  i,j,h,c : cardinal;
+  s : string;
+  test : boolean;
+begin
+  randomize;
+
+  // Zerujemy tablicê haszowan¹
+  for i := 0 to 9 do T[i] := nil;
+
+  // Tablicê wype³niamy ³añcuchami
+  for i := 1 to 35 do
+  begin
+    // Generujemy losowy ³añcuch z 4 znaków A-Z
+    s := '';
+    for j := 1 to 4 do s := s + char(65 + random(26));
+
+    // £añcuch umieszczamy na odpowiedniej liœcie
+    h := hf(s);
+    p := T[h];
+    test := true;
+
+    if p <> nil then
+      while true do
+      begin
+        if p^.data = s then
+        begin
+          test := false;    // duplikat
+          break;
+        end;
+        if p^.next = nil then break;
+        p := p^.next;
+      end;
+
+    if test then
+    begin
+      new(r);
+      r^.data := s;
+      r^.next := nil;
+      if p = nil then T[h] := r else p^.next := r;
+    end;
+  end;
+
+  // Wypisujemy tablicê
+  for i := 0 to 9 do
+  begin
+    write('T[',i,'] = ');
+    p := T[i];
+    while p <> nil do
+    begin
+      write(p^.data,' ');
+      p := p^.next;
+    end;
+    writeln;
+  end;
+
+  writeln;
+
+  // Generujemy wszystkie ³añcuchy 4-ro znakowe i szukamy ich w tablicy
+
+  s := 'AAAA';
+
+  repeat
+    h := hf(s);
+    c := 0;
+    p := T[h];
+    while (p <> nil) and (p^.data <> s) do
+    begin
+      inc(c);
+      p := p^.next;
+    end;
+
+    if p <> nil then writeln(s,' hf = ',h,' c = ',c);
+
+    for i := 4 downto 1 do
+    begin
+      s[i] := char(ord(s[i]) + 1);
+      if s[i] <= 'Z' then break;
+      s[i] := 'A';
+    end;
+
+  until s = 'AAAA';
+
+  // Usuwamy listy z pamiêci
+
+  for i := 0 to 9 do
+    while T[i] <> nil do
+    begin
+      p := T[i];
+      T[i] := p^.next;
+      p^.data := '';
+      dispose(p);
+    end;
+
+  writeln;
+
+end. 

@@ -1,0 +1,123 @@
+// Optymalne kolorowanie grafu nieskierowanego
+// Data   : 23.05.2014
+// (C)2014 mgr Jerzy Wa³aszek
+//--------------------------------------------
+
+program graph_coloring;
+
+// Definicja elementu listy s¹siedztwa
+type
+  PslistEl = ^slistEl;
+  slistEl = record
+    next : PslistEl;              // Nastêpny element listy
+    v : integer;                  // Wierzcho³ek docelowy
+  end;
+
+var
+  b,bc,n,m,i,u,v : integer;
+  graf           : array of PslistEl;
+  CT             : array of integer;
+  p,r            : PslistEl;
+  cnt            : qword;         // Licznik prób
+  test           : boolean;
+
+begin
+  read(n,m);                      // Odczytujemy liczbê wierzcho³ków i krawêdzi grafu
+
+  SetLength(graf,n);              // Tablica list s¹siedztwa
+  for i := 0 to n - 1 do graf[i] := nil;
+
+  SetLength(CT,n);                // Tablica kolorów wierzcho³ków
+
+  // Odczytujemy krawêdzie grafu
+
+  for i := 1 to m do
+  begin
+    read(u,v);                    // Wierzcho³ki krawêdzi
+    new(p);                       // Tworzymy element listy
+    p^.v := u;
+    p^.next := graf[v];           // Element do³¹czamy do listy s¹siadów v
+    graf[v] := p;
+
+    new(p);                       // To samo dla krawêdzi w drug¹ stronê
+    p^.v := v;
+    p^.next := graf[u];           // Element do³¹czamy do listy s¹siadów u
+    graf[u] := p;
+  end;
+
+  // Rozpoczynamy algorytm kolorowania grafu
+
+  cnt := 0;
+
+  for i := 0 to n - 1 do CT[i] := 0; // Inicjujemy licznik
+
+  b := 2;                         // Zliczanie rozpoczynamy przy podstawie 2
+  bc := 0;                        // Liczba najstarszych cyfr
+
+  while true do
+  begin
+    if bc > 0 then                // Kombinacjê sprawdzamy, gdy zawiera najstarsz¹ cyfrê
+    begin
+      test := true;
+      inc(cnt);                   // Zwiêkszamy liczbê prób
+      for v := 0 to n - 1 do      // Przegl¹damy wierzcho³ki grafu
+      begin
+        p := graf[v];             // Przegl¹damy s¹siadów wierzcho³ka v
+        while p <> nil do
+        begin
+          if CT[v] = CT[p^.v] then // Testujemy pokolorowanie
+          begin
+            test := false;        // Zaznaczamy pora¿kê
+            break;                // Opuszczamy pêtlê while
+          end;
+          p := p^.next;           // Nastêpny s¹siad
+        end;
+        if not test then break;   // Opuszczamy pêtlê for
+      end;
+      if test then break;         // Kombinacja znaleziona, koñczymy pêtlê g³ówn¹
+    end;
+
+    while true do                 // Pêtla modyfikacji licznika
+    begin
+       i := 0;
+       while i < n do
+       begin
+         inc(CT[i]);              // Zwiêkszamy cyfrê
+         if CT[i] = b - 1 then inc(bc);
+         if CT[i] < b then break;
+         CT[i] := 0;              // Zerujemy cyfrê
+         dec(bc);
+         inc(i);                  // Modyfikujemy nastêpn¹ cyfrê
+       end;
+       if i < n then break;       // Wychodzimy z pêtli zwiêkszania licznika
+       inc(b);                    // Licznik siê przewin¹³, zwiêkszamy bazê
+    end;
+  end;
+
+  // Wyœwietlamy wyniki
+
+  writeln;
+  for v := 0 to n - 1 do
+    writeln('vertex ',v,' has color ',CT[v]);
+  writeln;
+  writeln('graph chromatic number = ',b);
+  writeln('number of tries        = ',cnt);
+  writeln;
+
+  // Usuwamy tablice dynamiczne
+
+  for v := 0 to n - 1 do
+  begin
+    p := graf[v];
+    while p <> nil do
+    begin
+      r := p;
+      p := p^.next;
+      dispose(r);
+    end;
+  end;
+
+  SetLength(graf,0);
+  SetLength(CT,0);
+
+end. 
